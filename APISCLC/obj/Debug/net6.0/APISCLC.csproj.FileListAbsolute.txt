@@ -36,3 +36,9 @@ C:\backendSCLC\APISCLC\APISCLC\obj\Debug\net6.0\refint\APISCLC.dll
 C:\backendSCLC\APISCLC\APISCLC\obj\Debug\net6.0\APISCLC.pdb
 C:\backendSCLC\APISCLC\APISCLC\obj\Debug\net6.0\APISCLC.genruntimeconfig.cache
 C:\backendSCLC\APISCLC\APISCLC\obj\Debug\net6.0\ref\APISCLC.dll
+C:\backendSCLC\APISCLC\APISCLC\bin\Debug\net6.0\System.Web.Cors.dll
+C:\backendSCLC\APISCLC\APISCLC\bin\Debug\net6.0\System.Net.Http.Formatting.dll
+C:\backendSCLC\APISCLC\APISCLC\bin\Debug\net6.0\System.Web.Http.dll
+C:\backendSCLC\APISCLC\APISCLC\bin\Debug\net6.0\System.Web.Http.Cors.dll
+C:\backendSCLC\APISCLC\APISCLC\bin\Debug\net6.0\Newtonsoft.Json.dll
+C:\backendSCLC\APISCLC\APISCLC\bin\Debug\net6.0\Newtonsoft.Json.Bson.dll

@@ -21,6 +21,47 @@ namespace APISCLC.Controllers
         }
 
         [HttpPost]
+        [Route("ReservarLista")]
+        public IActionResult ReservarLista([FromBody] List<int> computadoras, int boleta, DateTime fecha, int modulo, int lab)
+        {
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(cadenaSQL))
+                {
+                    connection.Open();
+                    // Crear una tabla temporal para pasar la lista de computadoras como parámetro
+                    var table = new DataTable();
+                    table.Columns.Add("Value", typeof(int));
+                    foreach (var item in computadoras)
+                    {
+                        table.Rows.Add(item);
+                    }
+
+                    // Crear el objeto SqlCommand y asignar los parámetros
+                    using (SqlCommand cmd = new SqlCommand("[dbo].[ReservarComputadoras]", connection))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("@computadoras", table);
+                        cmd.Parameters.AddWithValue("@boleta", boleta);
+                        cmd.Parameters.AddWithValue("@fecha", fecha);
+                        cmd.Parameters.AddWithValue("@modulo", modulo);
+                        cmd.Parameters.AddWithValue("@laboratorio", lab);
+
+                        // Ejecutar el procedimiento almacenado
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+
+                return StatusCode(StatusCodes.Status200OK, new { mensaje = "ok" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { mensaje = ex.Message });
+            }
+        }
+
+
+        [HttpPost]
         [Route("ReservarModulo")]
         public IActionResult ReservarModulo(int usuario, int modulo, DateTime date, int lab)
         {
@@ -29,12 +70,12 @@ namespace APISCLC.Controllers
                 using (SqlConnection connection = new SqlConnection(cadenaSQL))
                 {
                     connection.Open();
-                    using (SqlCommand command = new SqlCommand("ReservarComputadorasPorLaboratorio", connection))
+                    using (SqlCommand command = new SqlCommand("ReservarLaboratorio", connection))
                     {
                         command.Parameters.AddWithValue("@usuario", usuario);
                         command.Parameters.AddWithValue("@modulo", modulo);
                         command.Parameters.AddWithValue("@fecha", date);
-                        command.Parameters.AddWithValue("@lab", lab);
+                        command.Parameters.AddWithValue("@laboratorio", lab);
 
                         command.CommandType = CommandType.StoredProcedure;
                         command.ExecuteNonQuery();
@@ -113,18 +154,21 @@ namespace APISCLC.Controllers
 
             }
         }
+
+
+
         [HttpGet]
-        [Route("ReservacionesModulo")]
-        public IActionResult ReservacionesModulo(DateTime dateTime, int modulo, int lab)
+        [Route("ObtenerComputadorasReservadasModulo")]
+        public IActionResult ObtenerComputadorasReservadasModulo(DateTime dateTime, int modulo, int lab)
         {
-            List<Reservacion> lista = new List<Reservacion>();
+            List<Computadora> lista = new List<Computadora>();
             try
             {
                 using (SqlConnection connection = new SqlConnection(cadenaSQL))
                 {
                     connection.Open();
 
-                    using (SqlCommand command = new SqlCommand("ObtenerReservacionesModulo", connection))
+                    using (SqlCommand command = new SqlCommand("ObtenerComputadorasReservadasModulo", connection))
                     {
                         command.Parameters.AddWithValue("@fecha", dateTime);
                         command.Parameters.AddWithValue("@modulo", modulo);
@@ -136,36 +180,17 @@ namespace APISCLC.Controllers
                         {
                             while (reader.Read())
                             {
-                                Usuario usario = new Usuario()
-                                {
-                                    boleta = Convert.ToInt32(reader["usuario"]),
-                                    password = "dummie"
-                                };
-
-
-
-                                Laboratorio laboratorio = new Laboratorio()
-                                {
-                                    idLaboratorio = Convert.ToInt32(reader["lab"])
-                                };
+                                
+                                
 
                                 Computadora computadora = new Computadora()
                                 {
-                                    idComputadora = Convert.ToInt32(reader["compu"]),
-                                    Laboratorio = laboratorio,
-
-                                    lab_id = laboratorio.idLaboratorio
+                                    idComputadora = Convert.ToInt32(reader["computadora"]),
+                                    Laboratorio = new Laboratorio() { idLaboratorio = 1},
+                                    lab_id = lab
                                 };
-                                Reservacion reservacion = new Reservacion();
-                                reservacion.idReserva = Convert.ToInt32(reader["idReserva"]);
-                                reservacion.fechahora_reserva = (DateTime)reader["fechahora_reserva"];
-                                reservacion.modulo_sreservacion = Convert.ToInt32(reader["modulo_sreservacion"]);
-                                reservacion.Usuario = usario;
-                                reservacion.Computadora = computadora;
-                                reservacion.Laboratorio = laboratorio;
-
-
-                                lista.Add(reservacion);
+  
+                                lista.Add(computadora);
 
 
                             }
