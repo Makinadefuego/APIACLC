@@ -91,7 +91,7 @@ namespace APISCLC.Controllers
 
         [HttpGet]
         [Route("ReservacionesSemana")]
-        public IActionResult ReservacionesLista(DateTime dateTime)
+        public IActionResult ReservacionesLista(DateTime dateTime, int labo)
         {
             List<Reservacion> lista = new List<Reservacion>();
             try
@@ -103,6 +103,7 @@ namespace APISCLC.Controllers
                     using (SqlCommand command = new SqlCommand("ObtenerReservasPorSemana", connection))
                     {
                         command.Parameters.AddWithValue("@fecha_inicio_semana", dateTime);
+                        command.Parameters.AddWithValue("@laboratorio_id", labo);
                         command.CommandType = CommandType.StoredProcedure;
 
 
@@ -120,22 +121,15 @@ namespace APISCLC.Controllers
 
                                 Laboratorio laboratorio = new Laboratorio()
                                 {
-                                    idLaboratorio = Convert.ToInt32(reader["lab"])
+                                    idLaboratorio = Convert.ToInt32(reader["laboratorio"])
                                 };
 
-                                Computadora computadora = new Computadora()
-                                {
-                                    idComputadora = Convert.ToInt32(reader["compu"]),
-                                    Laboratorio = laboratorio,
-
-                                    lab_id = laboratorio.idLaboratorio
-                                };
+                                
                                 Reservacion reservacion = new Reservacion();
-                                reservacion.idReserva = Convert.ToInt32(reader["idReserva"]);
-                                reservacion.fechahora_reserva = (DateTime)reader["fechahora_reserva"];
-                                reservacion.modulo_sreservacion = Convert.ToInt32(reader["modulo_sreservacion"]);
+                                reservacion.id = Convert.ToInt32(reader["id"]);
+                                reservacion.fecha = (DateTime)reader["fecha"];
+                                reservacion.modulo = Convert.ToInt32(reader["modulo"]);
                                 reservacion.Usuario = usario;
-                                reservacion.Computadora = computadora;
                                 reservacion.Laboratorio = laboratorio;
 
 
