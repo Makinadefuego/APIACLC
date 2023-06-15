@@ -15,6 +15,7 @@ namespace APISCLC.Controllers
     public class ReservacionController : ControllerBase
     {
         private readonly string cadenaSQL;
+
         public ReservacionController(IConfiguration configuration)
         {
             cadenaSQL = configuration.GetConnectionString("ConexionSQL");
@@ -22,7 +23,8 @@ namespace APISCLC.Controllers
 
         [HttpPost]
         [Route("ReservarLista")]
-        public IActionResult ReservarLista([FromBody] List<int> computadoras, int boleta, DateTime fecha, int modulo, int lab)
+        public IActionResult ReservarLista([FromBody] List<int> computadoras, int boleta, DateTime fecha, int modulo,
+            int lab)
         {
             try
             {
@@ -81,6 +83,7 @@ namespace APISCLC.Controllers
                         command.ExecuteNonQuery();
                     }
                 }
+
                 return StatusCode(StatusCodes.Status200OK, new { mensaje = "ok" });
             }
             catch (Exception ex)
@@ -124,7 +127,7 @@ namespace APISCLC.Controllers
                                     idLaboratorio = Convert.ToInt32(reader["laboratorio"])
                                 };
 
-                                
+
                                 Reservacion reservacion = new Reservacion();
                                 reservacion.id = Convert.ToInt32(reader["id"]);
                                 reservacion.fecha = (DateTime)reader["fecha"];
@@ -140,6 +143,7 @@ namespace APISCLC.Controllers
                         }
                     }
                 }
+
                 return StatusCode(StatusCodes.Status200OK, new { mensaje = "ok", response = lista });
             }
             catch (Exception ex)
@@ -174,16 +178,16 @@ namespace APISCLC.Controllers
                         {
                             while (reader.Read())
                             {
-                                
-                                
+
+
 
                                 Computadora computadora = new Computadora()
                                 {
                                     idComputadora = Convert.ToInt32(reader["computadora"]),
-                                    Laboratorio = new Laboratorio() { idLaboratorio = 1},
+                                    Laboratorio = new Laboratorio() { idLaboratorio = 1 },
                                     lab_id = lab
                                 };
-  
+
                                 lista.Add(computadora);
 
 
@@ -191,6 +195,7 @@ namespace APISCLC.Controllers
                         }
                     }
                 }
+
                 return StatusCode(StatusCodes.Status200OK, new { mensaje = "ok", response = lista });
             }
             catch (Exception ex)
@@ -199,8 +204,86 @@ namespace APISCLC.Controllers
 
             }
         }
-    }
 
+        [HttpGet]
+        [Route("ObtenerReservacionesUsuario")]
+        public IActionResult ObtenerReservacionesUsuario(int boleta)
+        {
+            List<Reservacion> lista = new List<Reservacion>();
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(cadenaSQL))
+                {
+                    connection.Open();
+
+                    using (SqlCommand command = new SqlCommand("ObtenerReservasUsuario", connection))
+                    {
+                        command.Parameters.AddWithValue("@boleta", boleta);
+                        command.CommandType = CommandType.StoredProcedure;
+
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                Usuario usuario = new Usuario()
+                                {
+                                    boleta = boleta
+                                };
+                                Laboratorio laboratorio = new Laboratorio()
+                                {
+                                    idLaboratorio = Convert.ToInt32(reader["laboratorio"])
+                                };
+                                Reservacion reservacion = new Reservacion();
+                                reservacion.id = Convert.ToInt32(reader["id"]);
+                                reservacion.fecha = (DateTime)reader["fecha"];
+                                reservacion.modulo = Convert.ToInt32(reader["modulo"]);
+                                reservacion.Usuario = usuario;
+                                reservacion.Laboratorio = laboratorio;
+
+                                lista.Add(reservacion);
+                            }
+                        }
+                    }
+                }
+
+
+                return StatusCode(StatusCodes.Status200OK, new { mensaje = "ok", response = lista });
+            }
+            catch
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { mensaje = "error" });
+            }
+
+
+            
+        }
+
+
+        [HttpDelete]
+        [Route("CancelarReservacion")]
+        public IActionResult CancelarReservacion(int id)
+        {
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(cadenaSQL))
+                {
+                    connection.Open();
+                    using (SqlCommand command = new SqlCommand("CancelarReserva", connection))
+                    {
+                        command.Parameters.AddWithValue("@reservacionId", id);
+                        command.CommandType = CommandType.StoredProcedure;
+                        command.ExecuteNonQuery();
+                    }
+                }
+
+                return StatusCode(StatusCodes.Status200OK, new { mensaje = "ok" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { mensaje = ex.Message });
+            }
+        }
+    }
 }
 
 
